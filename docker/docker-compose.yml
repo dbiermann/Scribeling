@@ -8,6 +8,8 @@ services:
     env_file:
       - ../.env
     restart: unless-stopped
+    volumes:
+      - ../src/transcripts:/app/src/transcripts
     # Requires the host to have an NVIDIA driver + nvidia-container-toolkit
     # installed and configured as the Docker default runtime.
     deploy:
