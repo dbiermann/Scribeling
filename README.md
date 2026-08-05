@@ -3,7 +3,7 @@
 
 A self-hosted Discord transcription and notetaking bot. It joins a voice channel and live-transcribes speech to a txt file. The transcription is then turned into structured notes.
 Two stages:
-- ✅ Live transcription vi a faster-whisper
+- ✅ Live transcription via faster-whisper
 - 🚧 Creation of structured notes via common LLM API's
 
 In its current state the bot can make live-transcriptions that are saved to transcripts folder. Only one voice channel can be transcribed per discord server. The structured notes part is very much still a work in progress.
