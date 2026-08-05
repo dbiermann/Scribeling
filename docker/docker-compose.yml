@@ -1,0 +1,19 @@
+services:
+  bot:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: prod
+    container_name: scribeling-bot
+    env_file:
+      - ../.env
+    restart: unless-stopped
+    # Requires the host to have an NVIDIA driver + nvidia-container-toolkit
+    # installed and configured as the Docker default runtime.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]

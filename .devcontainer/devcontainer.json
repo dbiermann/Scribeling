@@ -1,0 +1,29 @@
+{
+  "name": "scribeling-bot-dev",
+  "dockerComposeFile": ["docker-compose.dev.yml"],
+  "service": "bot-dev",
+  "workspaceFolder": "/app",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "ms-azuretools.vscode-docker",
+        "eamodio.gitlens",
+        "charliermarsh.ruff"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "editor.formatOnSave": true
+      }
+    }
+  },
+
+  // Keep the dev container running without launching the bot automatically —
+  // start it manually from the integrated terminal with `python -m bot.main`
+  // (from src/), or run `claude` to develop with Claude Code inside the container.
+  "overrideCommand": true,
+
+  "remoteUser": "vscode"
+}

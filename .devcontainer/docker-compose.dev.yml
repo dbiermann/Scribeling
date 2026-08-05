@@ -1,0 +1,28 @@
+services:
+  bot-dev:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      target: dev
+    container_name: scribeling-bot-dev
+    env_file:
+      - ../.env
+    # Requires the host to have an NVIDIA driver + nvidia-container-toolkit
+    # installed and configured as the Docker default runtime -- same
+    # requirement as docker/docker-compose.yml. Without this, nvidia-smi
+    # and CUDA won't see the GPU inside the container.
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - ..:/app:cached
+      # Host Claude Code auth/config and git identity, so `claude` and `git`
+      # work inside the container without separate setup.
+      - ${USERPROFILE}/.claude:/home/vscode/.claude:cached
+      - ${USERPROFILE}/.claude.json:/home/vscode/.claude.json:cached
+      - ${USERPROFILE}/.gitconfig:/home/vscode/.gitconfig:cached
+    command: sleep infinity

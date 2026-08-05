@@ -1,0 +1,6 @@
+discord.py[voice]>=2.7.1
+# Fixed PR #58 of discord-ext-voice-recv that implements Dave decryption. No merged version available
+discord-ext-voice-recv @ git+https://github.com/porgeeratad/discord-ext-voice-recv.git@dave-decrypt
+python-dotenv>=1.0
+faster-whisper>=1.0
+numpy>=1.24
