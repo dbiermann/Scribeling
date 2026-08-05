@@ -13,15 +13,15 @@ In its current state the bot can make live-transcriptions that are saved to tran
 ## Setup
 The bot is intended to be run as a docker container on a host machine with a Nvidia GPU + drivers.
 
-# Docker
+### Docker
 You'll need Docker Engine and nvidia-container-toolkit installed.
 
-# Bot Setting
+### Bot Setting
 Rename the .env.example file to .env and provide any required values.
 
 It might help to set a specific language and prompt to improve performance.
 
-# Discord bot token
+### Discord bot token
 - Generate your discord bot token in the discord dev portal. 
 - Set the bot to private, add bot via OAuth2 URL Generator to server.
 - OAuth2 URL Generator: Check bot and applications.commands under scope and grant connect, send messages, use voice activity permissions.
