@@ -41,7 +41,6 @@ class _SpeakerState:
     member: discord.User | discord.Member
     buffer: bytearray = field(default_factory=bytearray)
     timer_handle: asyncio.TimerHandle | None = None
-    flush_task: asyncio.Task | None = None
 
 
 class TranscriptionSink(voice_recv.AudioSink):
@@ -60,6 +59,9 @@ class TranscriptionSink(voice_recv.AudioSink):
         self._executor = executor
         self._silence_debounce_s = silence_debounce_s
         self._speakers: dict[int, _SpeakerState] = {}
+        # Every in-flight flush, including ones for speakers who already left,
+        # so /stop can wait for them instead of cancelling finished work.
+        self._pending_flushes: set[asyncio.Task] = set()
 
         os.makedirs(transcripts_dir, exist_ok=True)
         start_time = datetime.now()
@@ -99,7 +101,12 @@ class TranscriptionSink(voice_recv.AudioSink):
         if state is None:
             return
         state.timer_handle = None
-        state.flush_task = self.client.loop.create_task(self._flush(state))
+        self._spawn_flush(state)
+
+    def _spawn_flush(self, state: _SpeakerState) -> None:
+        task = self.client.loop.create_task(self._flush(state))
+        self._pending_flushes.add(task)
+        task.add_done_callback(self._pending_flushes.discard)
 
     async def _flush(self, state: _SpeakerState) -> None:
         if not state.buffer:
@@ -133,13 +140,17 @@ class TranscriptionSink(voice_recv.AudioSink):
         self._file.flush()
 
     async def flush_pending(self) -> None:
-        """Transcribe whatever's still buffered for every speaker. Call this
-        before disconnecting so the last few words aren't silently dropped."""
+        """Transcribe whatever's still buffered for every speaker and wait for
+        any in-flight transcriptions. Call this before disconnecting so the
+        last few words aren't silently dropped."""
         for state in list(self._speakers.values()):
             if state.timer_handle is not None:
                 state.timer_handle.cancel()
                 state.timer_handle = None
-            await self._flush(state)
+            if state.buffer:
+                self._spawn_flush(state)
+        if self._pending_flushes:
+            await asyncio.gather(*self._pending_flushes, return_exceptions=True)
 
     @voice_recv.AudioSink.listener()
     def on_voice_member_disconnect(
@@ -156,7 +167,7 @@ class TranscriptionSink(voice_recv.AudioSink):
         if state.timer_handle is not None:
             state.timer_handle.cancel()
         if state.buffer:
-            self.client.loop.create_task(self._flush(state))
+            self._spawn_flush(state)
 
     # -- called from a bare (non-loop) thread by AudioReader.stop() ---------
     def cleanup(self) -> None:
@@ -175,7 +186,7 @@ class TranscriptionSink(voice_recv.AudioSink):
         for state in self._speakers.values():
             if state.timer_handle is not None:
                 state.timer_handle.cancel()
-            if state.flush_task is not None and not state.flush_task.done():
-                state.flush_task.cancel()
+        for task in list(self._pending_flushes):
+            task.cancel()
         self._speakers.clear()
         self._file.close()
