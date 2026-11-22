@@ -5,9 +5,6 @@ debounce, transcribes via the STT model, and writes the result to a local .txt f
 from __future__ import annotations
 
 import asyncio
-import audioop  # stdlib, removed in Python 3.13+; swap for the `audioop-lts`
-
-# backport or a numpy resampler if this project ever upgrades.
 import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
@@ -29,11 +26,17 @@ MIN_UTTERANCE_BYTES = int(0.3 * 48_000 * 2 * 2)
 
 def pcm_stereo48k_to_mono16k_float32(pcm: bytes) -> np.ndarray:
     """Convert discord-ext-voice-recv's raw PCM (48kHz, stereo, 16-bit) into
-    the float32 mono 16kHz array faster-whisper expects."""
-    mono = audioop.tomono(pcm, 2, 0.5, 0.5)
-    resampled, _ = audioop.ratecv(mono, 2, 1, 48_000, 16_000, None)
-    samples = np.frombuffer(resampled, dtype=np.int16).astype(np.float32) / 32768.0
-    return samples
+    the float32 mono 16kHz array faster-whisper expects.
+
+    Pure numpy (no stdlib `audioop`, which Python 3.13 removed). 48kHz -> 16kHz
+    is an exact factor of 3, so each output sample is the mean of 3 input
+    samples, which also acts as a light anti-aliasing filter.
+    """
+    # Drop any partial stereo frame (4 bytes = 2 channels x 16-bit).
+    samples = np.frombuffer(pcm[: len(pcm) - len(pcm) % 4], dtype=np.int16)
+    mono = samples.astype(np.float32).reshape(-1, 2).mean(axis=1)
+    mono = mono[: len(mono) - len(mono) % 3]
+    return mono.reshape(-1, 3).mean(axis=1) / 32768.0
 
 
 @dataclass
@@ -68,7 +71,8 @@ class TranscriptionSink(voice_recv.AudioSink):
         self.output_path = os.path.join(
             transcripts_dir, f"{start_time:%Y-%m-%d_%H-%M-%S}.txt"
         )
-        self._file = open(self.output_path, "w", encoding="utf-8")
+        # Stays open for the whole session; closed in cleanup().
+        self._file = open(self.output_path, "w", encoding="utf-8")  # noqa: SIM115
 
     def wants_opus(self) -> bool:
         return False

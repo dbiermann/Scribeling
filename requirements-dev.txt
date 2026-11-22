@@ -1,0 +1,7 @@
+# Development and CI tools. Install on top of requirements.txt:
+#   pip install -r requirements.txt -r requirements-dev.txt
+pytest>=8.3
+pytest-asyncio>=0.24
+# Pinned to a minor version: Ruff's default rule set changes between releases,
+# and local runs and CI should flag the same things.
+ruff~=0.17.6
