@@ -9,7 +9,7 @@ from discord import app_commands
 from discord.ext import commands, voice_recv
 
 from bot import stt_model, voice_compat
-from bot.campaigns import ensure_campaign_dirs
+from bot.campaigns import ensure_campaign_dirs, list_campaigns
 from bot.config import settings
 from bot.transcription import TranscriptionSink
 
@@ -54,7 +54,12 @@ class TranscribeCog(commands.Cog):
         name="transcribe",
         description="Join your current voice channel and start live transcription",
     )
-    async def transcribe(self, interaction: discord.Interaction):
+    @app_commands.describe(
+        campaign="Campaign to save the transcript under (blank = the default campaign)"
+    )
+    async def transcribe(
+        self, interaction: discord.Interaction, campaign: str | None = None
+    ):
         if interaction.guild_id in self._sessions:
             await interaction.response.send_message(
                 "Already connected to a voice channel in this server. Use /stop first."
@@ -64,6 +69,18 @@ class TranscribeCog(commands.Cog):
         if self._transcriber is None:
             await interaction.response.send_message(
                 "Transcription model is still starting up, try again in a moment.",
+                ephemeral=True,
+            )
+            return
+
+        # Checked before joining voice, so a typo never leaves the bot in the
+        # channel. The name becomes a folder name; see bot.campaigns.
+        try:
+            campaign_dirs = settings.campaign(campaign)
+        except ValueError:
+            await interaction.response.send_message(
+                f"`{campaign}` is not a valid campaign name. Use 1-40 lowercase "
+                "letters, digits, `-` or `_`, starting with a letter or digit.",
                 ephemeral=True,
             )
             return
@@ -84,13 +101,12 @@ class TranscribeCog(commands.Cog):
             return
 
         try:
-            # DEFAULT_CAMPAIGN until /transcribe gets a campaign option (SCRIB-16/17).
-            campaign = settings.campaign()
-            ensure_campaign_dirs(campaign)
+            # Creates the campaign's folders on first use.
+            ensure_campaign_dirs(campaign_dirs)
             sink = TranscriptionSink(
                 transcriber=self._transcriber,
                 executor=self._executor,
-                transcripts_dir=campaign.transcripts_dir,
+                transcripts_dir=campaign_dirs.transcripts_dir,
                 silence_debounce_s=settings.whisper_silence_debounce_s,
             )
             voice_client.listen(sink)
@@ -107,8 +123,21 @@ class TranscribeCog(commands.Cog):
         self._sessions[interaction.guild_id] = (voice_client, sink)
 
         await interaction.followup.send(
-            f"Joined **{channel.name}** — live transcription will be saved to `{sink.output_path}`."
+            f"Joined **{channel.name}** for campaign **{campaign_dirs.name}** — "
+            f"live transcription will be saved to `{sink.output_path}`."
         )
+
+    @transcribe.autocomplete("campaign")
+    async def campaign_autocomplete(
+        self, interaction: discord.Interaction, current: str
+    ) -> list[app_commands.Choice[str]]:
+        """Suggest existing campaigns as the user types. Any other valid
+        name can still be typed and creates a new campaign."""
+        typed = current.strip().lower()
+        names = [n for n in list_campaigns(settings.data_dir) if typed in n]
+        # Names starting with what was typed come first; Discord shows 25 max.
+        names.sort(key=lambda n: (not n.startswith(typed), n))
+        return [app_commands.Choice(name=n, value=n) for n in names[:25]]
 
     @app_commands.command(name="stop", description="Leave the current voice channel")
     async def stop(self, interaction: discord.Interaction):

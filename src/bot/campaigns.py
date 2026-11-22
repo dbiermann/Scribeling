@@ -66,6 +66,21 @@ def campaign_paths(data_dir: str, name: str) -> CampaignPaths:
     return CampaignPaths(name=name, root=os.path.join(data_dir, "campaigns", name))
 
 
+def list_campaigns(data_dir: str) -> list[str]:
+    """Names of the existing campaign folders, sorted. Folders whose name is
+    not a valid campaign name are left out, as is anything that is not a
+    folder. A missing DATA_DIR/campaigns just means no campaigns yet."""
+    root = os.path.join(data_dir, "campaigns")
+    try:
+        entries = os.scandir(root)
+    except FileNotFoundError:
+        return []
+    with entries:
+        return sorted(
+            e.name for e in entries if e.is_dir() and CAMPAIGN_NAME_RE.fullmatch(e.name)
+        )
+
+
 def ensure_campaign_dirs(paths: CampaignPaths) -> None:
     """Create the campaign folder and its transcripts/ and notes/ subfolders.
 

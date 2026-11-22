@@ -92,3 +92,13 @@ def test_invalid_default_campaign_stops_startup(
     monkeypatch.setenv("DEFAULT_CAMPAIGN", "../secrets")
     with pytest.raises(RuntimeError, match="DEFAULT_CAMPAIGN"):
         Settings()
+
+
+def test_list_campaigns(tmp_path) -> None:
+    from bot.campaigns import list_campaigns
+
+    assert list_campaigns(str(tmp_path)) == []  # no campaigns/ folder yet
+    for name in ("tiamat", "grenzfeste", "Not_Valid", ".hidden"):
+        (tmp_path / "campaigns" / name).mkdir(parents=True)
+    (tmp_path / "campaigns" / "stray.txt").write_text("x")
+    assert list_campaigns(str(tmp_path)) == ["grenzfeste", "tiamat"]
