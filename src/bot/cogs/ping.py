@@ -1,4 +1,5 @@
 """Discord-facing layer: replies "pong" to "ping" in the command channel."""
+
 from __future__ import annotations
 
 import logging

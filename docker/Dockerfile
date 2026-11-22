@@ -36,6 +36,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo \
     && rm -rf /var/lib/apt/lists/*
 
+# Test and lint tools (pytest, ruff), dev image only
+COPY requirements-dev.txt .
+RUN python -m pip install --no-cache-dir --break-system-packages -r requirements-dev.txt
+
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/* \
