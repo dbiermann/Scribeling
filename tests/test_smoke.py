@@ -11,6 +11,7 @@ import numpy as np
 import pytest
 
 MODULES = [
+    "bot.campaigns",
     "bot.config",
     "bot.stt_model",
     "bot.transcription",

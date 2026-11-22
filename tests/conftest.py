@@ -20,13 +20,22 @@ TEST_ENV = {
     "DISCORD_GUILD_ID": "",
     "DISCORD_COMMAND_CHANNEL_ID": "123456789",
     "LOG_LEVEL": "WARNING",
-    "TRANSCRIPTS_DIR": "transcripts",
+    "DATA_DIR": "",
+    "DEFAULT_CAMPAIGN": "",
     "WHISPER_MODEL_SIZE": "tiny",
     "WHISPER_DEVICE": "cpu",
     "WHISPER_COMPUTE_TYPE": "int8",
     "WHISPER_SILENCE_DEBOUNCE_S": "0.6",
     "WHISPER_LANGUAGE": "",
     "WHISPER_INITIAL_PROMPT": "",
+    # Session notes: off, and blank so the code defaults apply.
+    "NOTES_ENABLED": "false",
+    "OPENAI_API_KEY": "",
+    "OPENAI_MODEL_ID": "",
+    "NOTES_CONTEXT_TOKENS": "",
+    "NOTES_MAX_OUTPUT_TOKENS": "",
+    "NOTES_TIMEOUT_S": "",
+    "GOOGLE_SERVICE_ACCOUNT_FILE": "",
 }
 os.environ.update(TEST_ENV)
 
