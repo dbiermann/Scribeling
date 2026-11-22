@@ -1,6 +1,15 @@
+# What the bot needs, with version ranges. The image and CI install
+# requirements.lock (exact versions) instead; after changing this file run
+# scripts/update-lock.sh and commit both.
 discord.py[voice]>=2.7.1
 # Fixed PR #58 of discord-ext-voice-recv that implements Dave decryption. No merged version available
 discord-ext-voice-recv @ git+https://github.com/porgeeratad/discord-ext-voice-recv.git@dave-decrypt
+# DAVE (E2EE) library, pulled in by discord.py[voice] as davey>=0.1.0. 0.2.0
+# requires callers to run prepare_transition/execute_transition after each
+# commit/welcome; discord.py 2.7.1 does not, so the session never switches to
+# the new keys, every received frame fails to decrypt and is decoded as noise.
+# Lift this cap only once discord.py supports the 0.2 transition API.
+davey>=0.1.7,<0.2
 python-dotenv>=1.0
 faster-whisper>=1.0
 numpy>=1.24

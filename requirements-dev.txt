@@ -1,5 +1,5 @@
-# Development and CI tools. Install on top of requirements.txt:
-#   pip install -r requirements.txt -r requirements-dev.txt
+# Development and CI tools. Install on top of the lock:
+#   pip install -r requirements.lock -r requirements-dev.txt -c requirements.lock
 pytest>=8.3
 pytest-asyncio>=0.24
 # Pinned to a minor version: Ruff's default rule set changes between releases,

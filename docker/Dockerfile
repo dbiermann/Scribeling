@@ -20,8 +20,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 WORKDIR /app
 
-COPY requirements.txt .
-RUN python -m pip install --no-cache-dir --break-system-packages -r requirements.txt
+# Exact versions from the lock, so a rebuild installs the same packages every
+# time (an unpinned rebuild once pulled in davey 0.2.0 and broke voice
+# decryption). Update it with scripts/update-lock.sh.
+COPY requirements.lock .
+RUN python -m pip install --no-cache-dir --break-system-packages -r requirements.lock
 
 
 # ---------------------------------------------------------------------------
@@ -37,8 +40,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # Test and lint tools (pytest, ruff), dev image only
+# Constrained by the lock so dev tools can't move a package the bot uses.
 COPY requirements-dev.txt .
-RUN python -m pip install --no-cache-dir --break-system-packages -r requirements-dev.txt
+RUN python -m pip install --no-cache-dir --break-system-packages \
+    -r requirements-dev.txt -c requirements.lock
 
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
