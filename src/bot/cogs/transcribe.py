@@ -9,6 +9,7 @@ from discord import app_commands
 from discord.ext import commands, voice_recv
 
 from bot import stt_model, voice_compat
+from bot.campaigns import ensure_campaign_dirs
 from bot.config import settings
 from bot.transcription import TranscriptionSink
 
@@ -83,10 +84,13 @@ class TranscribeCog(commands.Cog):
             return
 
         try:
+            # DEFAULT_CAMPAIGN until /transcribe gets a campaign option (SCRIB-16/17).
+            campaign = settings.campaign()
+            ensure_campaign_dirs(campaign)
             sink = TranscriptionSink(
                 transcriber=self._transcriber,
                 executor=self._executor,
-                transcripts_dir=settings.transcripts_dir,
+                transcripts_dir=campaign.transcripts_dir,
                 silence_debounce_s=settings.whisper_silence_debounce_s,
             )
             voice_client.listen(sink)

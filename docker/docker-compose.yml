@@ -8,8 +8,19 @@ services:
     env_file:
       - ../.env
     restart: unless-stopped
+    # Only data folders are mounted. src/bot (including the notes system prompt
+    # in bot/notes/prompts) stays as built into the image, so it can't be
+    # replaced from the host.
     volumes:
-      - ../src/transcripts:/app/src/transcripts
+      # All campaigns: data/campaigns/<name>/ with campaign.txt, campaign.toml,
+      # transcripts/ and notes/. Switching campaigns needs no change here.
+      # Create data/ before the first start and make it writable by uid 1001
+      # (the bot's user), or Docker creates it owned by root.
+      - ../data:/app/data
+      # Google service account key
+      # (GOOGLE_SERVICE_ACCOUNT_FILE=/app/secrets/google-service-account.json).
+      # A folder, not the file, so the bot still starts when there is no key.
+      - ../secrets:/app/secrets:ro
     # Requires the host to have an NVIDIA driver + nvidia-container-toolkit
     # installed and configured as the Docker default runtime.
     deploy:

@@ -6,7 +6,7 @@ Two stages:
 - ✅ Live transcription via faster-whisper
 - 🚧 Creation of structured notes via common LLM API's
 
-In its current state the bot can make live-transcriptions that are saved to transcripts folder. Only one voice channel can be transcribed per discord server. The structured notes part is very much still a work in progress.
+In its current state the bot can make live-transcriptions that are saved to the campaign's folder, `data/campaigns/<DEFAULT_CAMPAIGN>/transcripts/`. Only one voice channel can be transcribed per discord server. The structured notes part is very much still a work in progress.
 
 ⚠️ Due to lack of alternative, the bot is currently build upon an unmerged PR of discord-ext-voice-recv due to issues with discord enforced Dave encryption.
 

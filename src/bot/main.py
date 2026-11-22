@@ -6,9 +6,29 @@ import logging
 import discord
 from discord.ext import commands
 
-from bot.config import settings
+from bot.config import Settings, settings
 
 log = logging.getLogger(__name__)
+
+
+def log_notes_status(s: Settings) -> None:
+    """Say at startup what the session-notes feature will do."""
+    if not s.notes_enabled:
+        return
+    log.info(
+        "Session notes on: model %s, saving to %s/campaigns/<campaign>/notes",
+        s.openai_model_id,
+        s.data_dir,
+    )
+    if s.google_docs_enabled:
+        log.info(
+            "Google Docs upload on for campaigns with google_doc_id in campaign.toml"
+        )
+    else:
+        log.info(
+            "Google Docs upload off: GOOGLE_SERVICE_ACCOUNT_FILE is not set; "
+            "notes are saved locally only"
+        )
 
 
 def build_bot() -> commands.Bot:
@@ -37,6 +57,7 @@ def build_bot() -> commands.Bot:
 
 async def main() -> None:
     logging.basicConfig(level=settings.log_level)
+    log_notes_status(settings)
 
     bot = build_bot()
 

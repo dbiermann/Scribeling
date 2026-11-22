@@ -2,6 +2,13 @@
 __pycache__/
 *.pyc
 src/transcripts/
+# Campaign data: transcripts, notes and the group's campaign files hold
+# session content and Discord names.
+/data/
+# Google service account key (SCRIB-14). The pattern also catches a key saved
+# anywhere else in the repo under its usual name.
+secrets/
+*service-account*.json
 .claude
 logs
 docs

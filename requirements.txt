@@ -4,3 +4,9 @@ discord-ext-voice-recv @ git+https://github.com/porgeeratad/discord-ext-voice-re
 python-dotenv>=1.0
 faster-whisper>=1.0
 numpy>=1.24
+# Session notes (SCRIB-E1). openai and pydantic minimums are the versions the
+# SCRIB-01 spike ran on; the Google minimums are the current releases.
+pydantic>=2.14
+openai>=3.57
+google-api-python-client>=2.202
+google-auth>=2.63
