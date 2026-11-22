@@ -1,0 +1,5 @@
+# Store and check out text files with LF on every OS. Without this, Git for
+# Windows (core.autocrlf=true) writes CRLF into the shared working tree and Git
+# inside the dev container then reports every file as modified. LF also keeps
+# the Dockerfile and any shell scripts runnable in Linux containers.
+* text=auto eol=lf
