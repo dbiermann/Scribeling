@@ -32,7 +32,6 @@ TEST_ENV = {
     "NOTES_ENABLED": "false",
     "OPENAI_API_KEY": "",
     "OPENAI_MODEL_ID": "",
-    "NOTES_CONTEXT_TOKENS": "",
     "NOTES_MAX_OUTPUT_TOKENS": "",
     "NOTES_TIMEOUT_S": "",
     "GOOGLE_SERVICE_ACCOUNT_FILE": "",

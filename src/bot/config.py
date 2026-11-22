@@ -135,11 +135,6 @@ class Settings:
     openai_model_id: str = field(
         default_factory=lambda: _env("OPENAI_MODEL_ID", DEFAULT_OPENAI_MODEL_ID)
     )
-    # 0 = use the pinned model's context window (SCRIB-12). Set lower to force
-    # chunking or to leave headroom.
-    notes_context_tokens: int = field(
-        default_factory=lambda: _env_int("NOTES_CONTEXT_TOKENS", 0)
-    )
     # Includes reasoning tokens. 16000 is what the SCRIB-01 spike ran with;
     # its largest reply used about 6100.
     notes_max_output_tokens: int = field(
@@ -169,11 +164,6 @@ class Settings:
             raise RuntimeError(
                 "NOTES_ENABLED is true but OPENAI_API_KEY is not set. "
                 "Set the key, or set NOTES_ENABLED=false to run without notes."
-            )
-        if self.notes_context_tokens < 0:
-            raise RuntimeError(
-                "Environment variable NOTES_CONTEXT_TOKENS must be 0 or more, "
-                f"got: {self.notes_context_tokens}"
             )
         if self.notes_max_output_tokens <= 0:
             raise RuntimeError(

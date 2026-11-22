@@ -60,7 +60,6 @@ def test_notes_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
     _enable_notes(monkeypatch)
     s = Settings()
     assert s.openai_model_id == "gpt-6-luna"
-    assert s.notes_context_tokens == 0  # 0 = the model's own context window
     assert s.notes_max_output_tokens == 16_000
     assert s.notes_timeout_s == 900.0
 
@@ -68,12 +67,10 @@ def test_notes_defaults(monkeypatch: pytest.MonkeyPatch) -> None:
 def test_notes_overrides(monkeypatch: pytest.MonkeyPatch) -> None:
     _enable_notes(monkeypatch)
     monkeypatch.setenv("OPENAI_MODEL_ID", "gpt-7")
-    monkeypatch.setenv("NOTES_CONTEXT_TOKENS", "50000")
     monkeypatch.setenv("NOTES_MAX_OUTPUT_TOKENS", "8000")
     monkeypatch.setenv("NOTES_TIMEOUT_S", "120.5")
     s = Settings()
     assert s.openai_model_id == "gpt-7"
-    assert s.notes_context_tokens == 50_000
     assert s.notes_max_output_tokens == 8_000
     assert s.notes_timeout_s == 120.5
 
@@ -115,8 +112,6 @@ def test_missing_campaign_folder_is_fine(
 @pytest.mark.parametrize(
     ("name", "value"),
     [
-        ("NOTES_CONTEXT_TOKENS", "-1"),
-        ("NOTES_CONTEXT_TOKENS", "lots"),
         ("NOTES_MAX_OUTPUT_TOKENS", "0"),
         ("NOTES_TIMEOUT_S", "0"),
     ],
